@@ -42,8 +42,16 @@ function App() {
 	};
 
 	const sensors = useSensors(
-		useSensor(MouseSensor),
-		useSensor(TouchSensor),
+		useSensor(MouseSensor, {
+			activationConstraint: {
+				distance: 8
+			}
+		}),
+		useSensor(TouchSensor, {
+			activationConstraint: {
+				distance: 8
+			}
+		}),
 		useSensor(PointerSensor, {
 			activationConstraint: {
 				distance: 8
@@ -86,8 +94,8 @@ function App() {
 	};
 
 	return (
-		<div className='bg-gray-200 w-full h-full overflow-hidden'>
-			<Card className='mx-64 my-10'>
+		<div className='bg-gray-200 min-h-screen overflow-hidden'>
+			<Card className='mx-4 sm:mx-10 md:mx-20 lg:mx-64 my-10'>
 				<ActionHeader
 					selectedImageCount={selectedImageCount}
 					handleDeleteSelectedImages={handleDeleteSelectedImages}
@@ -100,7 +108,7 @@ function App() {
 						onDragEnd={handleDragEnd}
 						onDragCancel={handleDragCancel}>
 						<SortableContext items={images} strategy={rectSortingStrategy}>
-							<div className='grid grid-cols-5 gap-6'>
+							<div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-2 sm:gap-6'>
 								{images.map((image, i) => (
 									<ImageCardSortable
 										index={i}

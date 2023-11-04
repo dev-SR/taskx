@@ -43,7 +43,7 @@ const ImageCard = forwardRef<HTMLDivElement, Props>(
 				{...props}
 				onClick={onClick}
 				className={cn(
-					'shadow relative group overflow-hidden origin-[0_0] lin',
+					'shadow relative group overflow-hidden origin-[0_0]',
 					index === 0 && 'col-span-2 row-span-2'
 				)}>
 				{isDragging && <DragOverlayX />}
