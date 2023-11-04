@@ -7,10 +7,10 @@ import { Checkbox } from './checkbox';
 type Props = {
 	index: number;
 	image: Image;
-	// isOpacityEnabled?: boolean;
 	isDragging?: boolean;
 	onClick?: () => void;
 } & HTMLAttributes<HTMLDivElement>;
+
 const CheckBoxItem = ({ checked }: { checked: boolean }) => (
 	<div className={cn(`hidden group-hover:inline absolute top-2 left-2 z-20`, checked && 'inline')}>
 		<Checkbox id='terms' checked={checked} className='bg-white' />
@@ -43,7 +43,7 @@ const ImageCard = forwardRef<HTMLDivElement, Props>(
 				{...props}
 				onClick={onClick}
 				className={cn(
-					'shadow relative group overflow-hidden origin-[0_0] ',
+					'shadow relative group overflow-hidden origin-[0_0] lin',
 					index === 0 && 'col-span-2 row-span-2'
 				)}>
 				{isDragging && <DragOverlayX />}

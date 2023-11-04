@@ -1,4 +1,3 @@
-import { BsImage } from 'react-icons/bs';
 import { useState } from 'react';
 import { Card } from './components/ui/card';
 import {
@@ -17,6 +16,8 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import ImageCardSortable from './components/ui/ImageCardSortable';
 import ImageCard from './components/ui/ImageCard';
 import ActionHeader from './components/ui/ActionHeader';
+import { initialData } from './data/images';
+import ImageAddCardPlaceHolder from './components/ui/ImageAddCardPlaceHolder';
 
 export type Image = {
 	id: number;
@@ -24,30 +25,6 @@ export type Image = {
 	checked: boolean;
 };
 
-const initialData = [
-	{ id: 1, src: '/src/images/image-1.webp', checked: false },
-	{ id: 2, src: '/src/images/image-2.webp', checked: false },
-	{ id: 3, src: '/src/images/image-3.webp', checked: false },
-	{ id: 4, src: '/src/images/image-4.webp', checked: false },
-	{ id: 5, src: '/src/images/image-5.webp', checked: false },
-	{ id: 6, src: '/src/images/image-6.webp', checked: false },
-	{ id: 7, src: '/src/images/image-7.webp', checked: false },
-	{ id: 8, src: '/src/images/image-8.webp', checked: false },
-	{ id: 9, src: '/src/images/image-9.webp', checked: false },
-	{ id: 10, src: '/src/images/image-10.jpeg', checked: false },
-	{ id: 11, src: '/src/images/image-11.jpeg', checked: false }
-];
-
-const AddImageCardPlaceHolder = () => {
-	return (
-		<Card className='border-dashed border-2 flex items-center justify-center h-full w-full shrink-0 bg-gray-100'>
-			<div className='flex flex-col items-center space-y-6'>
-				<BsImage />
-				<div className=''>Add Images</div>
-			</div>
-		</Card>
-	);
-};
 function App() {
 	const [images, setImages] = useState<Image[]>(initialData);
 
@@ -109,50 +86,48 @@ function App() {
 	};
 
 	return (
-		<div className='bg-gray-200 w-screen h-full'>
-			<div className='px-60 py-10'>
-				<Card>
-					<ActionHeader
-						selectedImageCount={selectedImageCount}
-						handleDeleteSelectedImages={handleDeleteSelectedImages}
-					/>
-					<div className='p-8'>
-						<DndContext
-							sensors={sensors}
-							collisionDetection={closestCenter}
-							onDragStart={handleDragStart}
-							onDragEnd={handleDragEnd}
-							onDragCancel={handleDragCancel}>
-							<SortableContext items={images} strategy={rectSortingStrategy}>
-								<div className='grid grid-cols-5 gap-6'>
-									{images.map((image, i) => (
-										<ImageCardSortable
-											index={i}
-											key={i}
-											image={image}
-											onClick={() => handleImageClick(image.id)}
-										/>
-									))}
-									<AddImageCardPlaceHolder />
-								</div>
-							</SortableContext>
-							<DragOverlay
-								adjustScale
-								dropAnimation={{
-									duration: 300,
-									easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
-								}}>
-								{overlayItem ? (
-									<ImageCard
-										image={overlayItem}
-										index={images.findIndex((item) => item.id === overlayItem.id)}
+		<div className='bg-gray-200 w-full h-full overflow-hidden'>
+			<Card className='mx-64 my-10'>
+				<ActionHeader
+					selectedImageCount={selectedImageCount}
+					handleDeleteSelectedImages={handleDeleteSelectedImages}
+				/>
+				<div className='p-8'>
+					<DndContext
+						sensors={sensors}
+						collisionDetection={closestCenter}
+						onDragStart={handleDragStart}
+						onDragEnd={handleDragEnd}
+						onDragCancel={handleDragCancel}>
+						<SortableContext items={images} strategy={rectSortingStrategy}>
+							<div className='grid grid-cols-5 gap-6'>
+								{images.map((image, i) => (
+									<ImageCardSortable
+										index={i}
+										key={i}
+										image={image}
+										onClick={() => handleImageClick(image.id)}
 									/>
-								) : null}
-							</DragOverlay>
-						</DndContext>
-					</div>
-				</Card>
-			</div>
+								))}
+								<ImageAddCardPlaceHolder />
+							</div>
+						</SortableContext>
+						<DragOverlay
+							adjustScale
+							dropAnimation={{
+								duration: 300,
+								easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
+							}}>
+							{overlayItem ? (
+								<ImageCard
+									image={overlayItem}
+									index={images.findIndex((item) => item.id === overlayItem.id)}
+								/>
+							) : null}
+						</DragOverlay>
+					</DndContext>
+				</div>
+			</Card>
 		</div>
 	);
 }
