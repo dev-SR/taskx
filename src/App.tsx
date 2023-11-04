@@ -1,10 +1,24 @@
 import { BsImage } from 'react-icons/bs';
+import { CSS } from '@dnd-kit/utilities';
 
-import { useState } from 'react';
+import { DragEventHandler, useState } from 'react';
 import { Checkbox } from './components/ui/checkbox';
 import { Card } from './components/ui/card';
 import { cn } from './lib/utils';
 import { Button } from './components/ui/button';
+import {
+	DndContext,
+	DragEndEvent,
+	DragOverlay,
+	DragStartEvent,
+	MouseSensor,
+	PointerSensor,
+	TouchSensor,
+	closestCenter,
+	useSensor,
+	useSensors
+} from '@dnd-kit/core';
+import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 
 type Image = {
 	id: number;
@@ -31,31 +45,48 @@ type ImageCardProps = {
 	onClick: () => void;
 };
 
-const ImageCard = ({ image, onClick }: ImageCardProps) => {
+const ImageCard = ({ image, onClick, ...props }: ImageCardProps) => {
+	const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
+		id: image.id
+	});
+	const styles = {
+		transform: CSS.Transform.toString(transform),
+		transition: transition || undefined
+	};
 	return (
 		<Card
+			ref={setNodeRef}
+			style={styles}
+			{...attributes}
+			{...listeners}
+			{...props}
 			key={image.id}
-			className={`shadow relative group overflow-hidden ${
-				image.checked && 'bg-gray-300/50'
-			} flex-grow-0`}
+			className={cn('shadow relative group overflow-hidden', image.checked && 'bg-gray-300/50')}
 			onClick={onClick}>
-			<div
-				className={cn(
-					`hidden group-hover:inline absolute top-2 left-2 z-10`,
-					image.checked && 'inline'
-				)}>
-				<Checkbox id='terms' checked={image.checked} className='bg-white' />
-			</div>
-			<div
-				className={cn(
-					'absolute group-hover:bg-gray-500/50 w-full h-full',
-					image.checked && 'bg-gray-400/50'
-				)}></div>
-			<img
-				src={image.src}
-				alt={`Image ${image.id}`}
-				className='h-auto w-auto object-cover aspect-square'
-			/>
+			{isDragging ? (
+				<div className='absolute bg-gray-300 w-full h-full'></div>
+			) : (
+				<>
+					<div
+						className={cn(
+							`hidden group-hover:inline absolute top-2 left-2 z-10`,
+							image.checked && 'inline'
+						)}>
+						<Checkbox id='terms' checked={image.checked} className='bg-white' />
+					</div>
+					<div
+						className={cn(
+							'absolute group-hover:bg-gray-500/50 w-full h-full',
+							image.checked && 'bg-gray-400/50',
+							isDragging && ' bg-black'
+						)}></div>
+					<img
+						src={image.src}
+						alt={`Image ${image.id}`}
+						className='h-auto w-auto object-cover aspect-square'
+					/>
+				</>
+			)}
 		</Card>
 	);
 };
@@ -112,6 +143,50 @@ function App() {
 		setImages(updatedImages);
 	};
 
+	const sensors = useSensors(
+		useSensor(MouseSensor),
+		useSensor(TouchSensor),
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8
+			}
+		})
+	);
+
+	// for drag overlay
+	const [overlayItem, setOverlayItem] = useState<Image>();
+
+	// triggered when dragging starts
+	const handleDragStart = (event: DragStartEvent) => {
+		const { active } = event;
+		setOverlayItem(images.find((item) => item.id === active.id));
+	};
+
+	// triggered when dragging ends
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+		if (!over) return;
+
+		const activeItem = images.find((item) => item.id === active.id);
+		const overItem = images.find((item) => item.id === over.id);
+
+		if (!activeItem || !overItem) {
+			return;
+		}
+
+		const activeIndex = images.findIndex((item) => item.id === active.id);
+		const overIndex = images.findIndex((item) => item.id === over.id);
+
+		if (activeIndex !== overIndex) {
+			setImages((prev) => arrayMove(prev, activeIndex, overIndex));
+		}
+		setOverlayItem(undefined);
+	};
+
+	const handleDragCancel = () => {
+		setOverlayItem(undefined);
+	};
+
 	return (
 		<div className='bg-gray-200 w-screen h-full'>
 			<div className='px-60 py-10'>
@@ -137,24 +212,37 @@ function App() {
 						)}
 					</div>
 					<div className='p-8'>
-						<div className='grid grid-cols-5 gap-6'>
-							{images.map((image, i) =>
-								i == 0 ? (
-									<ImageCardFeatured
-										key={image.id}
-										image={image}
-										onClick={() => handleImageClick(image.id)}
-									/>
-								) : (
-									<ImageCard
-										key={image.id}
-										image={image}
-										onClick={() => handleImageClick(image.id)}
-									/>
-								)
-							)}
-							<AddImageCardPlaceHolder />
-						</div>
+						{/*  */}
+						<DndContext
+							sensors={sensors}
+							collisionDetection={closestCenter}
+							onDragStart={handleDragStart}
+							onDragEnd={handleDragEnd}
+							onDragCancel={handleDragCancel}>
+							<SortableContext items={images} strategy={rectSortingStrategy}>
+								<div className='grid grid-cols-5 gap-6'>
+									{images.map((image, i) =>
+										i == 0 ? (
+											<ImageCardFeatured
+												key={i}
+												image={image}
+												onClick={() => handleImageClick(image.id)}
+											/>
+										) : (
+											<ImageCard key={i} image={image} onClick={() => handleImageClick(image.id)} />
+										)
+									)}
+									<AddImageCardPlaceHolder />
+								</div>
+							</SortableContext>
+
+							<DragOverlay adjustScale>
+								{overlayItem ? (
+									// <Photo url={activeId} index={items.indexOf(activeId)} />
+									<ImageCard image={overlayItem} onClick={() => handleImageClick(overlayItem.id)} />
+								) : null}
+							</DragOverlay>
+						</DndContext>
 					</div>
 				</Card>
 			</div>
