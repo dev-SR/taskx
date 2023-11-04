@@ -1,11 +1,6 @@
 import { BsImage } from 'react-icons/bs';
-import { CSS } from '@dnd-kit/utilities';
-
-import { DragEventHandler, useState } from 'react';
-import { Checkbox } from './components/ui/checkbox';
+import { useState } from 'react';
 import { Card } from './components/ui/card';
-import { cn } from './lib/utils';
-import { Button } from './components/ui/button';
 import {
 	DndContext,
 	DragEndEvent,
@@ -18,9 +13,12 @@ import {
 	useSensor,
 	useSensors
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
+import ImageCardSortable from './components/ui/ImageCardSortable';
+import ImageCard from './components/ui/ImageCard';
+import ActionHeader from './components/ui/ActionHeader';
 
-type Image = {
+export type Image = {
 	id: number;
 	src: string;
 	checked: boolean;
@@ -40,83 +38,6 @@ const initialData = [
 	{ id: 11, src: '/src/images/image-11.jpeg', checked: false }
 ];
 
-type ImageCardProps = {
-	image: Image;
-	onClick: () => void;
-};
-
-const ImageCard = ({ image, onClick, ...props }: ImageCardProps) => {
-	const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
-		id: image.id
-	});
-	const styles = {
-		transform: CSS.Transform.toString(transform),
-		transition: transition || undefined
-	};
-	return (
-		<Card
-			ref={setNodeRef}
-			style={styles}
-			{...attributes}
-			{...listeners}
-			{...props}
-			key={image.id}
-			className={cn('shadow relative group overflow-hidden', image.checked && 'bg-gray-300/50')}
-			onClick={onClick}>
-			{isDragging ? (
-				<div className='absolute bg-gray-300 w-full h-full'></div>
-			) : (
-				<>
-					<div
-						className={cn(
-							`hidden group-hover:inline absolute top-2 left-2 z-10`,
-							image.checked && 'inline'
-						)}>
-						<Checkbox id='terms' checked={image.checked} className='bg-white' />
-					</div>
-					<div
-						className={cn(
-							'absolute group-hover:bg-gray-500/50 w-full h-full',
-							image.checked && 'bg-gray-400/50',
-							isDragging && ' bg-black'
-						)}></div>
-					<img
-						src={image.src}
-						alt={`Image ${image.id}`}
-						className='h-auto w-auto object-cover aspect-square'
-					/>
-				</>
-			)}
-		</Card>
-	);
-};
-
-const ImageCardFeatured = ({ image, onClick }: ImageCardProps) => {
-	return (
-		<Card
-			key={image.id}
-			className='col-span-2 row-span-2 shadow relative group overflow-hidden'
-			onClick={onClick}>
-			<div
-				className={cn(
-					`hidden group-hover:inline absolute top-2 left-2 z-10`,
-					image.checked && 'inline'
-				)}>
-				<Checkbox id='terms' checked={image.checked} className='bg-white' />
-			</div>
-			<div
-				className={cn(
-					'absolute group-hover:bg-gray-500/50 w-full h-full',
-					image.checked && 'bg-gray-400/50'
-				)}></div>
-			<img
-				src={image.src}
-				alt={`Image ${image.id}`}
-				className='h-auto w-auto object-cover aspect-square'
-			/>
-		</Card>
-	);
-};
 const AddImageCardPlaceHolder = () => {
 	return (
 		<Card className='border-dashed border-2 flex items-center justify-center h-full w-full shrink-0 bg-gray-100'>
@@ -191,28 +112,11 @@ function App() {
 		<div className='bg-gray-200 w-screen h-full'>
 			<div className='px-60 py-10'>
 				<Card>
-					<div className='border-b-2 py-4 px-8 font-bold text-xl'>
-						{selectedImageCount < 1 ? (
-							'Gallery'
-						) : (
-							<div className='flex items-center justify-between'>
-								<div className='flex space-x-2 items-center'>
-									<Checkbox id='status' checked={true} />
-									<label htmlFor='status'>
-										{selectedImageCount} {selectedImageCount == 1 ? 'File' : 'Files'} Selected
-									</label>
-								</div>
-								<Button
-									variant='link'
-									className='text-red-500 text-base h-0'
-									onClick={handleDeleteSelectedImages}>
-									Delete {selectedImageCount == 1 ? 'File' : 'Files'}
-								</Button>
-							</div>
-						)}
-					</div>
+					<ActionHeader
+						selectedImageCount={selectedImageCount}
+						handleDeleteSelectedImages={handleDeleteSelectedImages}
+					/>
 					<div className='p-8'>
-						{/*  */}
 						<DndContext
 							sensors={sensors}
 							collisionDetection={closestCenter}
@@ -221,25 +125,28 @@ function App() {
 							onDragCancel={handleDragCancel}>
 							<SortableContext items={images} strategy={rectSortingStrategy}>
 								<div className='grid grid-cols-5 gap-6'>
-									{images.map((image, i) =>
-										i == 0 ? (
-											<ImageCardFeatured
-												key={i}
-												image={image}
-												onClick={() => handleImageClick(image.id)}
-											/>
-										) : (
-											<ImageCard key={i} image={image} onClick={() => handleImageClick(image.id)} />
-										)
-									)}
+									{images.map((image, i) => (
+										<ImageCardSortable
+											index={i}
+											key={i}
+											image={image}
+											onClick={() => handleImageClick(image.id)}
+										/>
+									))}
 									<AddImageCardPlaceHolder />
 								</div>
 							</SortableContext>
-
-							<DragOverlay adjustScale>
+							<DragOverlay
+								adjustScale
+								dropAnimation={{
+									duration: 300,
+									easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
+								}}>
 								{overlayItem ? (
-									// <Photo url={activeId} index={items.indexOf(activeId)} />
-									<ImageCard image={overlayItem} onClick={() => handleImageClick(overlayItem.id)} />
+									<ImageCard
+										image={overlayItem}
+										index={images.findIndex((item) => item.id === overlayItem.id)}
+									/>
 								) : null}
 							</DragOverlay>
 						</DndContext>
