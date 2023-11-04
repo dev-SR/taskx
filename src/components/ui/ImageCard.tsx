@@ -1,5 +1,5 @@
 import { Image } from '@/App';
-import { CSSProperties, forwardRef, HTMLAttributes } from 'react';
+import { forwardRef, HTMLAttributes } from 'react';
 import { Card } from './card';
 import { cn } from '@/lib/utils';
 import { Checkbox } from './checkbox';
