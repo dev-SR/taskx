@@ -18,6 +18,7 @@ import ImageCard from './components/ui/ImageCard';
 import ActionHeader from './components/ui/ActionHeader';
 import { initialData } from './data/images';
 import ImageAddCardPlaceHolder from './components/ui/ImageAddCardPlaceHolder';
+import Footer from './components/ui/Footer';
 
 export type Image = {
 	id: number;
@@ -136,6 +137,7 @@ function App() {
 					</DndContext>
 				</div>
 			</Card>
+			<Footer />
 		</div>
 	);
 }
