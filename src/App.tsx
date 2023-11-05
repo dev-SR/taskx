@@ -124,7 +124,7 @@ function App() {
 						<DragOverlay
 							adjustScale
 							dropAnimation={{
-								duration: 300,
+								duration: 350,
 								easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
 							}}>
 							{overlayItem ? (

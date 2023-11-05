@@ -19,7 +19,7 @@ const CheckBoxItem = ({ checked }: { checked: boolean }) => (
 const ImageCardOverlay = ({ checked }: { checked: boolean }) => (
 	<div
 		className={cn(
-			'absolute  w-full h-full z-10 group-hover:bg-gray-400/50',
+			'absolute  w-full h-full z-10 group-hover:bg-gray-400/70',
 			checked && 'bg-gray-300/60'
 		)}
 	/>
