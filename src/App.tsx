@@ -95,8 +95,8 @@ function App() {
 	};
 
 	return (
-		<div className='bg-gray-200 min-h-screen overflow-hidden'>
-			<Card className='mx-4 sm:mx-10 md:mx-20 lg:mx-64 my-10'>
+		<div className='bg-gray-200 min-h-screen overflow-hidden flex flex-col justify-between'>
+			<Card className='mx-4 sm:mx-10 md:mx-20 lg:mx-64 mt-6 mb-16'>
 				<ActionHeader
 					selectedImageCount={selectedImageCount}
 					handleDeleteSelectedImages={handleDeleteSelectedImages}
